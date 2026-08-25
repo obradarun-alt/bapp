@@ -396,6 +396,9 @@
         <div class="card-body">
           <h3>Tag 2 friends & drop your comment link</h3>
           <p>Comment on the official post, tag 2 friends in it, then paste the link to <em>your</em> comment below.</p>
+          <div class="card-actions" style="margin-bottom:14px;">
+            <a class="btn btn-open" id="tagPostLink" target="_blank" rel="noopener">Open post ↗</a>
+          </div>
           <label class="field-label" for="commentLink">Your comment link</label>
           <input type="url" class="text-input mono" id="commentLink" placeholder="https://x.com/.../status/..." autocomplete="off">
           <div class="field-hint" id="commentHint">Must be a link to a reply on the official post.</div>
@@ -430,13 +433,13 @@
 <script>
 (function(){
   const X_PROFILE_URL = "https://x.com/Bappfun";
-  // TODO: replace with the real announcement/pinned post URL for the Like + Repost missions.
-  const OFFICIAL_POST_URL = "https://x.com/Bappfun";
+  const OFFICIAL_POST_URL = "https://x.com/Bappfun/status/2092329327194968549?s=20";
   const GOOGLE_SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwtn1FGAv-gP-p5U4FhUhW9TXs7DzJqP-IgbWeSQOScoK0-6VcVoanLzZwVquWHk7cJKQ/exec";
 
   document.getElementById('followLink').setAttribute('href', X_PROFILE_URL);
   document.getElementById('likeLink').setAttribute('href', OFFICIAL_POST_URL);
   document.getElementById('repostLink').setAttribute('href', OFFICIAL_POST_URL);
+  document.getElementById('tagPostLink').setAttribute('href', OFFICIAL_POST_URL);
 
   const state = { follow:false, like:false, repost:false, tag:false };
 
