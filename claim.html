@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BAPP - Claim Terminal</title>
+<meta name="description" content="Burn 200,000 BAPP to activate your BAPP NFT. Activated NFTs claim an equal share of every stock round the vault opens on Robinhood Chain.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23050a06'/%3E%3Crect x='3' y='3' width='10' height='10' rx='2' fill='%23baff39'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#050a06;
+    --bg2:#081208;
+    --panel:#0c1a10;
+    --panel-line:rgba(150,255,140,0.22);
+    --green:#baff39;
+    --green-dim:#7fd94a;
+    --green-deep:#1f5c2e;
+    --ink:#eafff0;
+    --ink-dim:#9fc9a8;
+    --danger:#ff5c5c;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  /* Flex display rules below would beat the browser default for [hidden]. */
+  [hidden]{display:none !important;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(186,255,57,0.08), transparent 45%),
+      radial-gradient(circle at 85% 100%, rgba(186,255,57,0.06), transparent 45%),
+      var(--bg);
+    background-attachment:fixed;
+    color:var(--ink);
+    font-family:'Space Mono', monospace;
+    font-size:15px;
+    line-height:1.55;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(186,255,57,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(186,255,57,0.035) 1px, transparent 1px);
+    background-size:28px 28px;
+    pointer-events:none;
+    z-index:0;
+  }
+  a{color:var(--green);}
+  ::selection{background:var(--green); color:#04220c;}
+  h1,h2,h3{margin:0; font-family:'Press Start 2P', monospace; font-weight:400; letter-spacing:0.01em;}
+  button, input{font-family:inherit;}
+  :focus-visible{outline:2px solid var(--green); outline-offset:2px;}
+
+  .wrap{
+    position:relative; z-index:1;
+    max-width:1180px;
+    margin:0 auto;
+    padding:48px 24px 80px;
+    display:grid;
+    grid-template-columns:340px 1fr;
+    gap:40px;
+    align-items:start;
+  }
+  @media (max-width:880px){
+    .wrap{grid-template-columns:1fr; padding:28px 16px 56px;}
+  }
+
+  /* ---------- LEFT PANEL ---------- */
+  .brand{
+    display:flex; align-items:center; gap:12px;
+    margin-bottom:28px;
+  }
+  .brand span{
+    font-family:'Press Start 2P', monospace;
+    font-size:11px;
+    color:var(--green);
+    letter-spacing:0.02em;
+  }
+  .brand a{
+    margin-left:auto;
+    font-size:11px;
+    color:var(--ink-dim);
+    text-decoration:none;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+  }
+  .brand a:hover{color:var(--green);}
+
+  .hero h1{
+    font-size:30px;
+    color:var(--ink);
+    line-height:1.35;
+    margin-bottom:16px;
+  }
+  .hero h1 .dot{color:var(--green);}
+  .hero p{
+    color:var(--ink-dim);
+    font-size:14px;
+    max-width:34ch;
+    margin-bottom:26px;
+  }
+
+  .stat-row{
+    display:flex;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .stat-tile{
+    flex:1;
+    min-width:0;
+    display:flex; flex-direction:column; gap:4px;
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:10px;
+    padding:12px 6px;
+    text-align:center;
+  }
+  .stat-value{
+    font-family:'Press Start 2P', monospace;
+    font-size:11px;
+    color:var(--green);
+    line-height:1.4;
+    letter-spacing:-0.03em;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:clip;
+  }
+  @media (max-width:400px){
+    .stat-value{font-size:9px;}
+  }
+  .stat-label{
+    font-size:10px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+  }
+  .utility-note{
+    font-size:12px;
+    color:var(--ink-dim);
+    border-left:2px solid var(--green);
+    padding-left:10px;
+    margin-bottom:26px;
+  }
+
+  .progress-label{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'Press Start 2P', monospace;
+    font-size:11px;
+    color:var(--ink);
+    margin-bottom:10px;
+  }
+  .progress-label .pct{color:var(--green);}
+  .progress-track{
+    height:10px;
+    border-radius:999px;
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, var(--green-deep), var(--green));
+    box-shadow:0 0 10px rgba(186,255,57,0.6);
+    transition:width .35s ease;
+  }
+
+  .wallet-block{margin-top:32px;}
+  .wallet-line{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:var(--radius);
+    padding:13px 14px;
+    font-size:12px;
+  }
+  .wallet-line b{color:var(--green); font-weight:700;}
+  .wallet-line button{
+    background:none; border:none; padding:0;
+    color:var(--ink-dim); font-size:11px;
+    text-transform:uppercase; letter-spacing:0.06em;
+    cursor:pointer;
+  }
+  .wallet-line button:hover{color:var(--danger);}
+
+  /* ---------- RIGHT: TERMINAL CARDS ---------- */
+  .terminals{display:flex; flex-direction:column; gap:18px;}
+  .card{
+    position:relative;
+    background:linear-gradient(180deg, rgba(186,255,57,0.05), rgba(186,255,57,0.01)), var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:16px;
+    padding:26px 26px;
+    transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .card-top{
+    display:flex; justify-content:space-between; align-items:baseline; gap:12px;
+    margin-bottom:18px;
+  }
+  .card-top h2{font-size:14px; color:var(--ink); line-height:1.5;}
+  .status{
+    font-size:10px;
+    letter-spacing:0.08em;
+    color:var(--green-dim);
+    white-space:nowrap;
+  }
+  .card > p.lead{margin:0 0 18px; color:var(--ink-dim); font-size:13px;}
+
+  .rows{margin-bottom:18px;}
+  .row{
+    display:flex; justify-content:space-between; gap:12px;
+    padding:9px 0;
+    border-bottom:1px dashed rgba(150,255,140,0.14);
+    font-size:12px;
+  }
+  .row span:first-child{color:var(--ink-dim); text-transform:uppercase; letter-spacing:0.05em;}
+  .row span:last-child{color:var(--ink); text-align:right;}
+  .row b{color:var(--green); font-weight:700;}
+
+  .picks{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(96px, 1fr));
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .pick{
+    background:var(--bg2);
+    border:1px solid var(--panel-line);
+    border-radius:10px;
+    padding:8px;
+    display:flex; flex-direction:column; gap:6px; align-items:center;
+    cursor:pointer;
+    font-size:11px;
+    color:var(--ink-dim);
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .pick:hover{border-color:var(--green-dim);}
+  .pick.on{
+    border-color:var(--green);
+    box-shadow:0 0 0 1px var(--green), 0 0 14px rgba(186,255,57,0.25);
+    color:var(--green);
+  }
+  .thumb{
+    position:relative;
+    width:100%;
+    aspect-ratio:1;
+    border-radius:8px;
+    background:var(--panel);
+    border:1px solid rgba(150,255,140,0.12);
+    overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .thumb b{
+    font-family:'Press Start 2P', monospace;
+    font-size:9px;
+    color:var(--green-deep);
+  }
+  .thumb img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
+  }
+
+  .notice{
+    margin:0 0 14px;
+    padding:11px 13px;
+    border:1px solid var(--panel-line);
+    border-left:3px solid var(--green);
+    border-radius:8px;
+    background:var(--bg2);
+    font-size:12px;
+    color:var(--ink);
+    word-break:break-word;
+  }
+  .empty{
+    grid-column:1/-1;
+    margin:0;
+    font-size:12px;
+    color:var(--ink-dim);
+    text-align:center;
+    padding:18px 8px;
+    border:1px dashed rgba(150,255,140,0.18);
+    border-radius:10px;
+  }
+
+  .btn{
+    width:100%;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    border-radius:999px;
+    border:1px solid var(--panel-line);
+    background:transparent;
+    color:var(--ink);
+    padding:13px 18px;
+    font-size:12px;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    cursor:pointer;
+    text-decoration:none;
+    transition:transform .12s ease, box-shadow .12s ease, background .15s ease, color .15s ease;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:disabled{opacity:0.45; pointer-events:none;}
+  .btn + .btn{margin-top:10px;}
+  .btn-hot{
+    background:var(--green);
+    color:#04220c;
+    border-color:var(--green);
+    font-family:'Press Start 2P', monospace;
+    font-size:11px;
+    padding:16px 18px;
+  }
+  .btn-hot:disabled{background:var(--panel); color:var(--ink-dim); border-color:var(--panel-line); opacity:1;}
+  .btn-hot:not(:disabled):hover{box-shadow:0 0 22px rgba(186,255,57,0.4);}
+  .btn-link{border-color:var(--green); color:var(--green); margin-top:10px;}
+  .btn-link:hover{background:rgba(186,255,57,0.1); box-shadow:0 0 14px rgba(186,255,57,0.25);}
+
+  .fineprint{margin:14px 0 0; font-size:11px; color:#4d6b53;}
+
+  /* ---------- WALLET PICKER ---------- */
+  .picker{
+    margin-bottom:14px;
+    border:1px solid var(--green);
+    border-radius:10px;
+    background:var(--bg2);
+    padding:14px;
+  }
+  .picker p{
+    margin:0 0 10px;
+    font-family:'Press Start 2P', monospace;
+    font-size:10px;
+    color:var(--green);
+  }
+  .picker-item{
+    width:100%;
+    display:flex; align-items:center; gap:10px;
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:10px 12px;
+    margin-bottom:8px;
+    color:var(--ink);
+    font-size:12px;
+    cursor:pointer;
+  }
+  .picker-item:hover{border-color:var(--green);}
+  .picker-item img{width:20px; height:20px; border-radius:4px;}
+  .picker-cancel{
+    background:none; border:none; padding:0;
+    color:var(--ink-dim); font-size:11px;
+    text-transform:uppercase; letter-spacing:0.06em;
+    cursor:pointer;
+  }
+  .picker-cancel:hover{color:var(--danger);}
+
+  /* ---------- CLAIM LIST ---------- */
+  .claim-list{display:flex; flex-direction:column; gap:10px; margin-bottom:14px;}
+  .claim-row{
+    display:flex; justify-content:space-between; align-items:center; gap:14px;
+    background:var(--bg2);
+    border:1px solid var(--panel-line);
+    border-radius:10px;
+    padding:13px 14px;
+  }
+  .claim-row b{
+    display:block;
+    font-family:'Press Start 2P', monospace;
+    font-size:10px;
+    color:var(--green);
+    margin-bottom:5px;
+    word-break:break-word;
+  }
+  .claim-row small{font-size:11px; color:var(--ink-dim); letter-spacing:0.04em;}
+  .claim-row button{
+    flex:none;
+    border-radius:999px;
+    border:1px solid var(--green);
+    background:transparent;
+    color:var(--green);
+    padding:9px 18px;
+    font-size:11px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+  .claim-row button:hover{background:rgba(186,255,57,0.1);}
+  .claim-row button:disabled{opacity:0.45; cursor:default;}
+
+  /* ---------- GALLERY ---------- */
+  .board{margin-top:40px;}
+  .board-head{
+    display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:12px;
+    margin-bottom:18px;
+  }
+  .board-head h2{font-size:16px; color:var(--ink);}
+  .board-head p{margin:0; font-size:12px; color:var(--ink-dim);}
+  .board-stats{
+    display:flex; flex-wrap:wrap; gap:10px;
+    margin-bottom:18px;
+  }
+  .board-stats .stat-tile{flex:1 1 120px;}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px;}
+  .chip{
+    border-radius:999px;
+    border:1px solid var(--panel-line);
+    background:transparent;
+    color:var(--ink-dim);
+    padding:8px 16px;
+    font-size:11px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+  .chip:hover{color:var(--ink);}
+  .chip.on{border-color:var(--green); color:var(--green); background:rgba(186,255,57,0.08);}
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));
+    gap:12px;
+    margin-bottom:18px;
+  }
+  .gcard{
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:12px;
+    overflow:hidden;
+  }
+  .gcard.off{opacity:0.5;}
+  .gcard .thumb{border:none; border-radius:0; aspect-ratio:1;}
+  .gcard-body{padding:10px 12px; display:flex; flex-direction:column; gap:4px;}
+  .gcard-body .id{font-size:12px; color:var(--ink); font-weight:700;}
+  .gcard-body .rank{
+    font-family:'Press Start 2P', monospace;
+    font-size:8px;
+    color:var(--green);
+  }
+  .gcard-body .who{font-size:11px; color:var(--ink-dim); text-decoration:none; word-break:break-all;}
+  .gcard-body a.who:hover{color:var(--green);}
+  .gcard-body .off-tag{font-size:10px; color:#4d6b53; letter-spacing:0.06em;}
+
+  .footer{
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 24px 48px;
+    position:relative; z-index:1;
+  }
+  .footer p{
+    margin:0;
+    border-top:1px solid var(--panel-line);
+    padding-top:20px;
+    font-size:11px;
+    color:#4d6b53;
+    line-height:1.7;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- LEFT: brand + hero + counters + wallet -->
+  <div class="left">
+    <div class="brand">
+      <span>@Bappfun</span>
+      <a href="index.html">← Whitelist gate</a>
+    </div>
+
+    <div class="hero">
+      <h1>Claim<br>terminal<span class="dot">.</span></h1>
+      <p>Burn 200,000 BAPP to activate your BAPP NFT, permanently. The vault turns pool fees into stock tokens and opens them as rounds. Every active NFT takes an equal share.</p>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-tile">
+        <span class="stat-value"><span data-burn-price>—</span></span>
+        <span class="stat-label">Burn per NFT</span>
+      </div>
+      <div class="stat-tile">
+        <span class="stat-value" data-burn-count>0</span>
+        <span class="stat-label">Activated</span>
+      </div>
+      <div class="stat-tile">
+        <span class="stat-value" data-burn-total>0</span>
+        <span class="stat-label"><span data-burn-symbol>BAPP</span> burned</span>
+      </div>
+    </div>
+    <div class="utility-note">Activation is permanent and rides with the NFT. Sell it and the buyer keeps earning.</div>
+
+    <div class="progress-label">
+      <span data-hero-count>0 ACTIVE</span>
+      <span class="pct" data-hero-pct>0%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" data-hero-fill></div></div>
+
+    <div class="wallet-block">
+      <div class="wallet-line" data-wallet-line hidden>
+        <span>WALLET</span>
+        <b data-wallet-address>0x…</b>
+        <button type="button" data-wallet-disconnect>EXIT</button>
+      </div>
+      <p class="notice" data-page-notice role="status" hidden></p>
+    </div>
+  </div>
+
+  <!-- RIGHT: burn + claim terminals -->
+  <div class="right">
+    <div class="terminals">
+
+      <div class="card" id="burn">
+        <div class="card-top">
+          <h2>BURN &amp; ACTIVATE</h2>
+          <span class="status" data-burn-status>○ NOT LIVE YET</span>
+        </div>
+        <p class="lead">Pick your NFTs. Two transactions run: approve, then activate. The tokens go out of circulation forever.</p>
+
+        <div class="rows">
+          <div class="row"><span>BURN PER NFT</span><span><b data-burn-price-row>—</b> <span data-burn-symbol>BAPP</span></span></div>
+          <div class="row"><span>YOUR BALANCE</span><span><span data-burn-balance>0</span> <span data-burn-symbol>BAPP</span></span></div>
+          <div class="row" data-burn-cost-row hidden><span>YOU BURN</span><span><b data-burn-cost>0</b> <span data-burn-symbol>BAPP</span> FOR <span data-burn-qty>0</span> NFT</span></div>
+        </div>
+
+        <div class="picks" data-burn-picks>
+          <p class="empty">CONNECT YOUR WALLET TO SEE YOUR NFTS.</p>
+        </div>
+
+        <div class="picker" data-picker hidden>
+          <p>CHOOSE A WALLET</p>
+          <div data-picker-list></div>
+          <button type="button" class="picker-cancel" data-picker-cancel>CANCEL</button>
+        </div>
+
+        <p class="notice" data-burn-notice role="status" hidden></p>
+
+        <button type="button" class="btn" data-burn-connect>CONNECT WALLET</button>
+        <button type="button" class="btn btn-hot" data-burn-go hidden disabled>BURN &amp; ACTIVATE</button>
+        <a class="btn btn-link" data-burn-link href="#" target="_blank" rel="noopener" hidden>VIEW TRANSACTION →</a>
+
+        <p class="fineprint">Burning is irreversible. An activated NFT can never be deactivated, and the tokens never come back.</p>
+      </div>
+
+      <div class="card" id="claim">
+        <div class="card-top">
+          <h2>CLAIM STOCKS</h2>
+          <span class="status" data-claim-status>○ NOT LIVE YET</span>
+        </div>
+        <p class="lead">Every round splits equally across the NFTs active when it opened. Your share sits on the token ID until you take it. Each round stays open for 12 months.</p>
+
+        <div class="rows">
+          <div class="row"><span>YOUR ACTIVE NFTS</span><span data-claim-active>0</span></div>
+          <div class="row"><span>ROUNDS OPENED</span><span data-claim-rounds>0</span></div>
+        </div>
+
+        <div class="claim-list" data-claim-list>
+          <p class="empty">CONNECT YOUR WALLET TO SEE YOUR SHARE.</p>
+        </div>
+
+        <p class="notice" data-claim-notice role="status" hidden></p>
+
+        <button type="button" class="btn" data-claim-connect>CONNECT WALLET</button>
+        <a class="btn btn-link" data-claim-link href="#" target="_blank" rel="noopener" hidden>VIEW TRANSACTION →</a>
+
+        <p class="fineprint">Rewards follow the NFT, not the wallet. Claim your open rounds before you sell.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FULL WIDTH: activation board -->
+<div class="wrap" style="display:block" id="activated">
+  <div class="board">
+    <div class="board-head">
+      <h2>ACTIVATION BOARD</h2>
+      <p>Every NFT that burned its way in, in order. No wallet needed — this board is public.</p>
+    </div>
+
+    <div class="board-stats">
+      <div class="stat-tile"><span class="stat-value" data-g-minted>0</span><span class="stat-label">Minted</span></div>
+      <div class="stat-tile"><span class="stat-value" data-g-active>0</span><span class="stat-label">Activated</span></div>
+      <div class="stat-tile"><span class="stat-value" data-g-burned>0</span><span class="stat-label">Tokens burned</span></div>
+      <div class="stat-tile"><span class="stat-value" data-g-ratio>0%</span><span class="stat-label">Active rate</span></div>
+    </div>
+
+    <div class="chips">
+      <button type="button" class="chip on" data-g-filter="active">ACTIVE ONLY</button>
+      <button type="button" class="chip" data-g-filter="all">ALL</button>
+      <button type="button" class="chip" data-g-reload>REFRESH</button>
+    </div>
+
+    <p class="empty" data-g-empty>SCROLL HERE TO LOAD THE BOARD…</p>
+    <div class="grid" data-g-grid></div>
+    <button type="button" class="btn" data-g-more hidden>SHOW MORE</button>
+  </div>
+</div>
+
+<footer class="footer">
+  <p>BAPP · ROBINHOOD CHAIN. Not financial advice. Burning is permanent and irreversible. Do your own research before interacting with any contract.</p>
+</footer>
+
+<script src="claim.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ----------------------------- helpers ----------------------------- */
+
+  function $(sel) { return document.querySelector(sel); }
+  function all(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+  function num(n) { return Number(n).toLocaleString('en-US'); }
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  /**
+   * Builds an NFT thumbnail. Without an image a numbered box remains.
+   * Before the collection art goes online this state is normal.
+   */
+  function thumb(item, cls) {
+    var box = el('div', cls || 'thumb');
+    var mark = el('b', null, '#' + item.id);
+    box.appendChild(mark);
+
+    if (!item.image) return box;
+
+    var img = document.createElement('img');
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    img.alt = 'bapp #' + item.id;
+    img.addEventListener('load', function () { mark.remove(); });
+    // Before the art is uploaded the URL returns 404. The numbered box stays.
+    img.addEventListener('error', function () { img.remove(); });
+    img.src = item.image;
+    box.appendChild(img);
+    return box;
+  }
+
+  function showPageNotice(text) {
+    var box = $('[data-page-notice]');
+    box.textContent = text;
+    box.hidden = false;
+  }
+
+  /* --------------------------- wallet picker --------------------------- */
+
+  var picking = false;
+
+  function renderWallets(wallets, onDone) {
+    var list = $('[data-picker-list]');
+    list.innerHTML = '';
+    wallets.forEach(function (w) {
+      var b = el('button', 'picker-item');
+      b.type = 'button';
+      if (w.icon) {
+        var img = document.createElement('img');
+        img.src = w.icon;
+        img.alt = '';
+        b.appendChild(img);
+      }
+      b.appendChild(el('span', null, w.name));
+      b.addEventListener('click', function () {
+        picking = false;
+        $('[data-picker]').hidden = true;
+        window.BappClaim.connect(w.rdns).catch(function (err) {
+          onDone(err && err.message ? err.message : 'THE WALLET DID NOT CONNECT.');
+        });
+      });
+      list.appendChild(b);
+    });
+  }
+
+  /**
+   * Opens the wallet picker. With one wallet installed it connects at
+   * once. The caller decides where the error text lands.
+   */
+  function openWalletPicker(onError) {
+    var fail = onError || showPageNotice;
+    var api = window.BappClaim;
+    if (!api) {
+      fail('CLAIM.JS DID NOT LOAD. THE WALLET CANNOT CONNECT.');
+      return;
+    }
+
+    var wallets = api.discoverWallets();
+    if (wallets.length > 1) {
+      renderWallets(wallets, fail);
+      picking = true;
+      $('[data-picker]').hidden = false;
+      $('#burn').scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
+    api.connect(wallets.length === 1 ? wallets[0].rdns : undefined).catch(function (err) {
+      fail(err && err.message ? err.message : 'THE WALLET DID NOT CONNECT.');
+    });
+  }
+
+  /* ---------------------------- connection ---------------------------- */
+
+  var claimApi = null;
+  var pageNoticeShown = false;
+
+  function connectionBridge() {
+    claimApi = window.BappClaim;
+    if (!claimApi) {
+      // Without claim.js the page stays inert. There is no fake terminal.
+      console.warn('claim.js did not load. The terminal stays offline.');
+      showPageNotice('CLAIM.JS DID NOT LOAD. REFRESH THE PAGE.');
+      return;
+    }
+
+    if (!claimApi.getState().configured) {
+      showPageNotice('THE VAULT IS NOT LIVE YET. WATCH THE ANNOUNCEMENTS.');
+      return;
+    }
+
+    claimApi.subscribe(function (s) {
+      $('[data-wallet-line]').hidden = !s.address;
+      $('[data-wallet-address]').textContent = s.address
+        ? claimApi.shortAddress(s.address)
+        : '0x…';
+
+      if (s.wrongNetwork) {
+        showPageNotice('WRONG NETWORK. SWITCH TO ' + claimApi.chain.name.toUpperCase() + '.');
+        pageNoticeShown = true;
+      } else if (pageNoticeShown) {
+        $('[data-page-notice]').hidden = true;
+        pageNoticeShown = false;
+      }
+    });
+
+    $('[data-wallet-disconnect]').addEventListener('click', function () {
+      claimApi.disconnect();
+    });
+    $('[data-picker-cancel]').addEventListener('click', function () {
+      picking = false;
+      $('[data-picker]').hidden = true;
+    });
+  }
+
+  /* ------------------------------- burn ------------------------------- */
+
+  // The latest vault snapshot. claim.js provides it through BappVault.
+  var vaultState = null;
+
+  // The token ids the user picked.
+  var picked = new Set();
+
+  // Is an activation transaction running right now.
+  var burnBusy = false;
+  var burnNoticeShown = false;
+
+  function showBurnNotice(text) {
+    var box = $('[data-burn-notice]');
+    box.textContent = text;
+    box.hidden = false;
+  }
+
+  function burnBridge() {
+    var vault = window.BappVault;
+    if (!vault || !vault.configured) {
+      // Without a vault address the terminals show "not live" and no
+      // fake numbers.
+      return;
+    }
+
+    $('[data-burn-connect]').addEventListener('click', function () {
+      $('[data-burn-notice]').hidden = true;
+      openWalletPicker(showBurnNotice);
+    });
+    $('[data-claim-connect]').addEventListener('click', function () {
+      $('[data-claim-notice]').hidden = true;
+      openWalletPicker(showClaimNotice);
+    });
+
+    $('[data-burn-go]').addEventListener('click', doActivate);
+
+    vault.subscribe(function (s) {
+      vaultState = s;
+      // Drop picks that left the wallet or turned active.
+      var live = new Set(s.inactive);
+      picked.forEach(function (id) { if (!live.has(id)) picked.delete(id); });
+      paintBurn();
+      paintClaim();
+    });
+  }
+
+  function paintBurn() {
+    var s = vaultState;
+    if (!s) return;
+
+    all('[data-burn-symbol]').forEach(function (n) { n.textContent = s.tokenSymbol; });
+    var priceText = s.price > 0n ? s.priceText : '—';
+    $('[data-burn-price]').textContent = priceText;
+    $('[data-burn-price-row]').textContent = priceText;
+    $('[data-burn-balance]').textContent = s.balanceText;
+    $('[data-burn-count]').textContent = num(s.activatedCount);
+    $('[data-burn-total]').textContent = s.totalBurnedText;
+    $('[data-hero-count]').textContent = num(s.activatedCount) + ' ACTIVE';
+
+    $('[data-burn-status]').textContent = s.loading
+      ? '● READING VAULT'
+      : s.token ? '● VAULT ONLINE' : '○ TOKEN NOT LIVE YET';
+
+    // A connected wallet needs no connect button.
+    $('[data-burn-connect]').hidden = !!s.address;
+    $('[data-burn-go]').hidden = !s.address;
+
+    // A chain error can be temporary. Clear the notice when it recovers.
+    if (s.error) {
+      showBurnNotice(s.error);
+      burnNoticeShown = true;
+    } else if (burnNoticeShown) {
+      $('[data-burn-notice]').hidden = true;
+      burnNoticeShown = false;
+    }
+
+    var host = $('[data-burn-picks]');
+    host.innerHTML = '';
+
+    if (!s.address) {
+      host.appendChild(el('p', 'empty', 'CONNECT YOUR WALLET TO SEE YOUR NFTS.'));
+    } else if (s.loading) {
+      host.appendChild(el('p', 'empty', 'READING THE VAULT…'));
+    } else if (!s.token) {
+      host.appendChild(el('p', 'empty', 'THE TOKEN IS NOT LIVE YET. COME BACK AFTER LAUNCH.'));
+    } else if (s.owned.length === 0) {
+      host.appendChild(el('p', 'empty', 'NO BAPP NFT IN THIS WALLET.'));
+    } else if (s.inactive.length === 0) {
+      host.appendChild(el('p', 'empty', 'EVERY NFT IN THIS WALLET IS ALREADY ACTIVE.'));
+    } else {
+      s.owned.forEach(function (item) {
+        if (item.index > 0) return;
+        host.appendChild(pickCard(item));
+      });
+    }
+
+    paintBurnCost();
+  }
+
+  function pickCard(item) {
+    var card = el('div', 'pick' + (picked.has(item.id) ? ' on' : ''));
+    card.appendChild(thumb(item));
+    card.appendChild(el('span', null, '#' + item.id));
+    card.addEventListener('click', function () {
+      if (burnBusy) return;
+      if (picked.has(item.id)) picked.delete(item.id);
+      else picked.add(item.id);
+      card.classList.toggle('on', picked.has(item.id));
+      paintBurnCost();
+    });
+    return card;
+  }
+
+  function paintBurnCost() {
+    var s = vaultState;
+    var vault = window.BappVault;
+    var count = picked.size;
+
+    $('[data-burn-cost-row]').hidden = count === 0;
+    $('[data-burn-qty]').textContent = num(count);
+    if (s && count > 0) {
+      $('[data-burn-cost]').textContent = vault.formatAmount(vault.burnCost(count), s.tokenDecimals, 0);
+    }
+
+    var btn = $('[data-burn-go]');
+    if (burnBusy) {
+      btn.textContent = s && s.step === 'approving' ? 'APPROVING…' : 'BURNING…';
+      btn.disabled = true;
+      return;
+    }
+    btn.textContent = count > 1 ? 'BURN & ACTIVATE ' + count + ' NFTS' : 'BURN & ACTIVATE';
+    btn.disabled = count === 0 || !s || !s.token || s.price === 0n;
+  }
+
+  function doActivate() {
+    var vault = window.BappVault;
+    if (!vault || burnBusy || picked.size === 0) return;
+
+    $('[data-burn-notice]').hidden = true;
+    $('[data-burn-link]').hidden = true;
+    burnBusy = true;
+    paintBurnCost();
+
+    vault.activate([].slice.call(picked)).then(function (res) {
+      picked.clear();
+      // Without an explorer the URL comes back empty. Hide the link then.
+      var url = window.BappClaim.explorerTxUrl(res.hash);
+      var link = $('[data-burn-link]');
+      link.href = url || '#';
+      link.hidden = !url;
+      // Too many NFTs for one transaction: the rest needs a second one.
+      showBurnNotice(res.more
+        ? 'PART OF YOUR SELECTION IS ACTIVE. PICK THE REST AND BURN AGAIN.'
+        : 'DONE. YOUR NFT IS ACTIVE AND EARNS FROM THE NEXT ROUND ON.');
+      // The board is stale now. Refresh it on the next open.
+      galleryStale = true;
+    }).catch(function (err) {
+      showBurnNotice(err && err.message ? err.message : 'THE ACTIVATION FAILED.');
+    }).then(function () {
+      burnBusy = false;
+      paintBurn();
+    });
+  }
+
+  /* ------------------------------- claim ------------------------------- */
+
+  // Which asset is being claimed right now. One transaction at a time.
+  var claimBusy = null;
+  var claimNoticeShown = false;
+
+  function showClaimNotice(text) {
+    var box = $('[data-claim-notice]');
+    box.textContent = text;
+    box.hidden = false;
+  }
+
+  function claimRow(asset) {
+    var row = el('div', 'claim-row');
+
+    var left = el('div');
+    left.appendChild(el('b', null, asset.text + ' ' + asset.symbol));
+    left.appendChild(el('small', null,
+      asset.roundIds.length + ' ROUND(S) · ' + asset.tokenIds.length + ' NFT(S)'));
+    row.appendChild(left);
+
+    var btn = el('button', null, claimBusy === asset.address ? 'CLAIMING…' : 'CLAIM');
+    btn.type = 'button';
+    btn.disabled = claimBusy !== null;
+    btn.addEventListener('click', function () { doClaim(asset); });
+    row.appendChild(btn);
+
+    return row;
+  }
+
+  function doClaim(asset) {
+    var vault = window.BappVault;
+    if (!vault || claimBusy) return;
+
+    $('[data-claim-notice]').hidden = true;
+    $('[data-claim-link]').hidden = true;
+    claimBusy = asset.address;
+    paintClaim();
+
+    vault.claim(asset.address).then(function (res) {
+      var url = window.BappClaim.explorerTxUrl(res.hash);
+      var link = $('[data-claim-link]');
+      link.href = url || '#';
+      link.hidden = !url;
+      // Too many pairs for one transaction: the rest needs a second one.
+      if (res.more) showClaimNotice('PART OF YOUR SHARE IS PAID. PRESS CLAIM AGAIN FOR THE REST.');
+    }).catch(function (err) {
+      showClaimNotice(err && err.message ? err.message : 'THE CLAIM FAILED.');
+    }).then(function () {
+      claimBusy = null;
+      paintClaim();
+    });
+  }
+
+  function paintClaim() {
+    var s = vaultState;
+    if (!s) return;
+
+    $('[data-claim-active]').textContent = num(s.active.length);
+    $('[data-claim-rounds]').textContent = num(s.totalRounds);
+    $('[data-claim-status]').textContent = s.loading ? '● READING VAULT' : '● VAULT ONLINE';
+    $('[data-claim-connect]').hidden = !!s.address;
+
+    if (s.error) {
+      showClaimNotice(s.error);
+      claimNoticeShown = true;
+    } else if (claimNoticeShown) {
+      $('[data-claim-notice]').hidden = true;
+      claimNoticeShown = false;
+    }
+
+    var list = $('[data-claim-list]');
+    list.innerHTML = '';
+
+    if (!s.address) {
+      list.appendChild(el('p', 'empty', 'CONNECT YOUR WALLET TO SEE YOUR SHARE.'));
+      return;
+    }
+    if (s.loading) {
+      list.appendChild(el('p', 'empty', 'READING THE VAULT…'));
+      return;
+    }
+    // A failed read leaves the list empty. Saying "nothing to claim"
+    // would be wrong.
+    if (s.error) {
+      list.appendChild(el('p', 'empty', 'THE VAULT COULD NOT BE READ. TRY AGAIN IN A MOMENT.'));
+      return;
+    }
+    if (s.owned.length === 0) {
+      list.appendChild(el('p', 'empty', 'NO BAPP NFT IN THIS WALLET.'));
+      return;
+    }
+    if (s.active.length === 0) {
+      list.appendChild(el('p', 'empty', 'YOUR NFT IS NOT ACTIVE YET. BURN TO ACTIVATE IT FIRST.'));
+      return;
+    }
+    if (s.assets.length === 0) {
+      list.appendChild(el('p', 'empty', 'NOTHING TO CLAIM RIGHT NOW. A NEW ROUND OPENS WHEN FEES BUILD UP.'));
+      return;
+    }
+
+    s.assets.forEach(function (asset) { list.appendChild(claimRow(asset)); });
+
+    if (s.truncated) {
+      list.appendChild(el('p', 'empty',
+        'TOO MANY ROUNDS TO SHOW AT ONCE. THE OLDEST ROUNDS COME FIRST BECAUSE THEY EXPIRE FIRST. CLAIM THESE, THEN REFRESH FOR MORE.'));
+    }
+  }
+
+  /* ------------------------------ board ------------------------------ */
+
+  // How many cards are drawn. The list can reach 1,000 boxes; draw it in
+  // slices.
+  var PAGE_CARDS = 120;
+  var shown = PAGE_CARDS;
+
+  // An activation just ran; the board is stale. Refresh on the next open.
+  var galleryStale = false;
+
+  function galleryBridge() {
+    var gallery = window.BappGallery;
+    if (!gallery || !gallery.configured) return;
+
+    all('[data-g-filter]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        all('[data-g-filter]').forEach(function (b) { b.classList.remove('on'); });
+        btn.classList.add('on');
+        shown = PAGE_CARDS;
+        gallery.setFilter(btn.getAttribute('data-g-filter'));
+      });
+    });
+
+    $('[data-g-reload]').addEventListener('click', function () {
+      shown = PAGE_CARDS;
+      galleryStale = false;
+      gallery.load(true);
+    });
+
+    $('[data-g-more]').addEventListener('click', function () {
+      shown += PAGE_CARDS;
+      paintGallery(gallery.getState());
+    });
+
+    gallery.subscribe(paintGallery);
+
+    /*
+     * The section loads lazily. No call runs on page load; we read when
+     * the user approaches the section.
+     */
+    var section = $('#activated');
+    if (!('IntersectionObserver' in window)) {
+      gallery.load();
+      return;
+    }
+
+    var watcher = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        gallery.load(galleryStale);
+        galleryStale = false;
+      });
+    }, { rootMargin: '400px' });
+
+    watcher.observe(section);
+  }
+
+  function galleryCard(item) {
+    var card = el('article', 'gcard' + (item.active ? '' : ' off'));
+    card.appendChild(thumb(item));
+
+    var body = el('div', 'gcard-body');
+    body.appendChild(el('span', 'id', '#' + item.id));
+
+    if (item.active) {
+      body.appendChild(el('span', 'rank', 'ACTIVATION #' + item.index));
+      if (item.ownerUrl) {
+        var link = el('a', 'who', item.ownerShort);
+        link.href = item.ownerUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        body.appendChild(link);
+      } else {
+        body.appendChild(el('span', 'who', item.ownerShort));
+      }
+    } else {
+      body.appendChild(el('span', 'off-tag', 'NOT ACTIVATED'));
+    }
+
+    card.appendChild(body);
+    return card;
+  }
+
+  function paintGallery(s) {
+    $('[data-g-minted]').textContent = num(s.minted);
+    $('[data-g-active]').textContent = num(s.activated);
+    $('[data-g-burned]').textContent = s.burnedText;
+    $('[data-g-ratio]').textContent = s.ratioText;
+
+    // The left-panel progress bar mirrors the board counters.
+    $('[data-hero-pct]').textContent = s.ratioText;
+    $('[data-hero-fill]').style.width = s.minted > 0
+      ? Math.min(100, (s.activated / s.minted) * 100) + '%'
+      : '0%';
+
+    var grid = $('[data-g-grid]');
+    var empty = $('[data-g-empty]');
+    var more = $('[data-g-more]');
+
+    if (s.loading) {
+      empty.textContent = 'READING THE CHAIN…';
+      empty.hidden = false;
+      more.hidden = true;
+      return;
+    }
+    if (s.error) {
+      empty.textContent = s.error;
+      empty.hidden = false;
+      more.hidden = true;
+      return;
+    }
+    if (!s.loaded) {
+      empty.textContent = 'SCROLL HERE TO LOAD THE BOARD…';
+      empty.hidden = false;
+      more.hidden = true;
+      return;
+    }
+    if (s.items.length === 0) {
+      empty.textContent = s.filter === 'active'
+        ? 'NOBODY HAS ACTIVATED YET. BE THE FIRST.'
+        : 'NOTHING MINTED YET.';
+      empty.hidden = false;
+      grid.innerHTML = '';
+      more.hidden = true;
+      return;
+    }
+
+    empty.hidden = true;
+    grid.innerHTML = '';
+    s.items.slice(0, shown).forEach(function (item) { grid.appendChild(galleryCard(item)); });
+
+    more.hidden = s.items.length <= shown;
+    more.textContent = 'SHOW MORE (' + num(s.items.length - shown) + ' LEFT)';
+  }
+
+  connectionBridge();
+  burnBridge();
+  galleryBridge();
+})();
+</script>
+
+</body>
+</html>
