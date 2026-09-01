@@ -88,13 +88,24 @@
   }
   .brand a{
     margin-left:auto;
-    font-size:11px;
-    color:var(--ink-dim);
-    text-decoration:none;
-    letter-spacing:0.06em;
+    font-family:'Press Start 2P', monospace;
+    font-size:10px;
+    letter-spacing:0.04em;
     text-transform:uppercase;
+    text-decoration:none;
+    color:#04220c;
+    background:var(--green);
+    border:1px solid var(--green);
+    border-radius:999px;
+    padding:10px 16px;
+    white-space:nowrap;
+    box-shadow:0 0 14px rgba(186,255,57,0.35);
+    transition:transform .12s ease, box-shadow .12s ease;
   }
-  .brand a:hover{color:var(--green);}
+  .brand a:hover{
+    transform:translateY(-1px);
+    box-shadow:0 0 22px rgba(186,255,57,0.5);
+  }
 
   .status-pill{
     display:inline-flex; align-items:center; gap:8px;
