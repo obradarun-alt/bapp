@@ -210,6 +210,8 @@
     color:var(--green-dim);
     white-space:nowrap;
   }
+  .status.off{color:var(--danger);}
+  .status.on{color:var(--green);}
   .card > p.lead{margin:0 0 18px; color:var(--ink-dim); font-size:13px;}
 
   .rows{margin-bottom:18px;}
@@ -514,7 +516,7 @@
       <div class="card" id="burn">
         <div class="card-top">
           <h2>BURN &amp; ACTIVATE</h2>
-          <span class="status" data-burn-status>○ NOT LIVE YET</span>
+          <span class="status off" data-burn-status>○ NOT LIVE YET</span>
         </div>
         <p class="lead">Pick your NFTs. Two transactions run: approve, then activate. The tokens go out of circulation forever.</p>
 
@@ -546,7 +548,7 @@
       <div class="card" id="claim">
         <div class="card-top">
           <h2>CLAIM STOCKS</h2>
-          <span class="status" data-claim-status>○ NOT LIVE YET</span>
+          <span class="status off" data-claim-status>○ NOT LIVE YET</span>
         </div>
         <p class="lead">Every round splits equally across the NFTs active when it opened. Your share sits on the token ID until you take it. Each round stays open for 12 months.</p>
 
@@ -806,9 +808,12 @@
     $('[data-burn-total]').textContent = s.totalBurnedText;
     $('[data-hero-count]').textContent = num(s.activatedCount) + ' ACTIVE';
 
-    $('[data-burn-status]').textContent = s.loading
+    var burnStatus = $('[data-burn-status]');
+    burnStatus.textContent = s.loading
       ? '● READING VAULT'
       : s.token ? '● VAULT ONLINE' : '○ TOKEN NOT LIVE YET';
+    burnStatus.classList.toggle('off', !s.loading && !s.token);
+    burnStatus.classList.toggle('on', !s.loading && !!s.token);
 
     // A connected wallet needs no connect button.
     $('[data-burn-connect]').hidden = !!s.address;
@@ -971,7 +976,10 @@
 
     $('[data-claim-active]').textContent = num(s.active.length);
     $('[data-claim-rounds]').textContent = num(s.totalRounds);
-    $('[data-claim-status]').textContent = s.loading ? '● READING VAULT' : '● VAULT ONLINE';
+    var claimStatus = $('[data-claim-status]');
+    claimStatus.textContent = s.loading ? '● READING VAULT' : '● VAULT ONLINE';
+    claimStatus.classList.remove('off');
+    claimStatus.classList.toggle('on', !s.loading);
     $('[data-claim-connect]').hidden = !!s.address;
 
     if (s.error) {
