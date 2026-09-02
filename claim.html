@@ -923,7 +923,7 @@
     burnBusy = true;
     paintBurnCost();
 
-    vault.activate([].slice.call(picked)).then(function (res) {
+    vault.activate(Array.from(picked)).then(function (res) {
       picked.clear();
       // Without an explorer the URL comes back empty. Hide the link then.
       var url = window.BappClaim.explorerTxUrl(res.hash);
