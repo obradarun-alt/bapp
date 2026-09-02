@@ -295,6 +295,12 @@
   .btn-secondary{border-color:var(--green); color:var(--green); margin-top:12px;}
   .btn-secondary:hover{background:rgba(186,255,57,0.1); box-shadow:0 0 14px rgba(186,255,57,0.25);}
 
+  .actions{
+    display:flex; flex-direction:column; gap:12px;
+    margin-top:22px; margin-bottom:16px;
+  }
+  .actions .btn{margin-top:0;}
+
   .footnote{
     font-size:11px; color:#4d6b53; text-align:center; margin-top:4px;
   }
@@ -366,8 +372,11 @@
           <span class="tag">Copy</span>
         </button>
       </div>
-      <a class="btn btn-primary" href="https://opensea.io/collection/brokerapp/" target="_blank" rel="noopener">View on OpenSea &#8599;</a>
-      <a class="btn btn-secondary" href="https://x.com/Bappfun" target="_blank" rel="noopener">Follow @Bappfun &#8599;</a>
+      <div class="actions">
+        <a class="btn btn-secondary" href="https://dexscreener.com/robinhood/0x716f57327e492ec66c86a3b139e29ff651df668b955d229c1376bfe0f8604ba7" target="_blank" rel="noopener">Chart on DexScreener &#8599;</a>
+        <a class="btn btn-primary" href="https://opensea.io/collection/brokerapp" target="_blank" rel="noopener">View on OpenSea &#8599;</a>
+        <a class="btn btn-secondary" href="https://x.com/Bappfun" target="_blank" rel="noopener">Follow @Bappfun &#8599;</a>
+      </div>
       <div class="footnote">Watch @Bappfun for the exact mint time and any last-minute updates.</div>
     </div>
 
