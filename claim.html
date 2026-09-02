@@ -380,6 +380,55 @@
   }
   .picker-cancel:hover{color:var(--danger);}
 
+  /* ---------- SHARE POPUP ---------- */
+  .modal-back{
+    position:fixed; inset:0;
+    z-index:50;
+    display:flex; align-items:center; justify-content:center;
+    padding:20px;
+    background:rgba(3,8,4,0.84);
+  }
+  .modal{
+    width:100%;
+    max-width:380px;
+    background:linear-gradient(180deg, rgba(186,255,57,0.06), rgba(186,255,57,0.01)), var(--panel);
+    border:1px solid var(--green);
+    border-radius:16px;
+    box-shadow:0 0 40px rgba(186,255,57,0.16);
+    padding:26px 24px 20px;
+    text-align:center;
+  }
+  .modal h3{
+    font-size:12px;
+    color:var(--green);
+    margin-bottom:18px;
+  }
+  .modal-amount{
+    font-family:'Press Start 2P', monospace;
+    font-size:18px;
+    line-height:1.45;
+    color:var(--ink);
+    word-break:break-word;
+    margin-bottom:10px;
+  }
+  .modal-amount .sym{color:var(--green);}
+  .modal-detail{
+    margin:0 0 20px;
+    font-size:11px;
+    letter-spacing:0.05em;
+    color:var(--ink-dim);
+  }
+  .modal .btn-link{margin-top:10px;}
+  .modal-close{
+    display:block;
+    margin:16px auto 0;
+    background:none; border:none; padding:0;
+    color:var(--ink-dim); font-size:11px;
+    text-transform:uppercase; letter-spacing:0.06em;
+    cursor:pointer;
+  }
+  .modal-close:hover{color:var(--danger);}
+
   /* ---------- CLAIM LIST ---------- */
   .claim-list{display:flex; flex-direction:column; gap:10px; margin-bottom:14px;}
   .claim-row{
@@ -625,6 +674,17 @@
     <p class="empty" data-g-empty>SCROLL HERE TO LOAD THE BOARD…</p>
     <div class="grid" data-g-grid></div>
     <button type="button" class="btn" data-g-more hidden>SHOW MORE</button>
+  </div>
+</div>
+
+<div class="modal-back" data-share hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="share-title">
+    <h3 id="share-title">CLAIM CONFIRMED</h3>
+    <div class="modal-amount"><span data-share-amount>0</span> <span class="sym" data-share-symbol></span></div>
+    <p class="modal-detail" data-share-detail></p>
+    <button type="button" class="btn btn-hot" data-share-go>SHARE ON X &#8599;</button>
+    <a class="btn btn-link" data-share-tx href="#" target="_blank" rel="noopener" hidden>VIEW TRANSACTION &rarr;</a>
+    <button type="button" class="modal-close" data-share-close>CLOSE</button>
   </div>
 </div>
 
@@ -948,6 +1008,63 @@
     });
   }
 
+  /* ---------------------------- share popup ---------------------------- */
+
+  var SITE_URL = 'https://bapp.space';
+
+  // The composer URL for the claim on screen, and the control to hand focus
+  // back to once the popup closes.
+  var shareIntent = '';
+  var shareReturn = null;
+
+  function openShare(asset, txUrl) {
+    $('[data-share-amount]').textContent = asset.text;
+    $('[data-share-symbol]').textContent = asset.symbol;
+    $('[data-share-detail]').textContent =
+      asset.roundIds.length + ' ROUND(S) · ' + asset.tokenIds.length + ' NFT(S)';
+
+    var tx = $('[data-share-tx]');
+    tx.href = txUrl || '#';
+    tx.hidden = !txUrl;
+
+    shareIntent = 'https://x.com/intent/post' +
+      '?text=' + encodeURIComponent('Just claimed ' + asset.text + ' ' + asset.symbol +
+        ' from the @Bappfun vault. Every active BAPP NFT takes an equal share of every round.') +
+      '&url=' + encodeURIComponent(SITE_URL);
+
+    shareReturn = document.activeElement;
+    $('[data-share]').hidden = false;
+    // The backdrop is fixed; without this the page scrolls behind it.
+    document.body.style.overflow = 'hidden';
+    $('[data-share-go]').focus();
+  }
+
+  function closeShare() {
+    $('[data-share]').hidden = true;
+    document.body.style.overflow = '';
+    if (shareReturn && shareReturn.focus) shareReturn.focus();
+    shareReturn = null;
+  }
+
+  function shareBridge() {
+    var box = $('[data-share]');
+
+    $('[data-share-go]').addEventListener('click', function () {
+      // Opens the X composer with the text filled in. Nothing goes out until
+      // the user sends it themselves.
+      window.open(shareIntent, '_blank', 'noopener');
+      closeShare();
+    });
+    $('[data-share-close]').addEventListener('click', closeShare);
+
+    // A click on the backdrop, not inside the dialog, closes the popup.
+    box.addEventListener('click', function (e) { if (e.target === box) closeShare(); });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !box.hidden) closeShare();
+    });
+  }
+
   /* ------------------------------- claim ------------------------------- */
 
   // Which asset is being claimed right now. One transaction at a time.
@@ -992,8 +1109,13 @@
       var link = $('[data-claim-link]');
       link.href = url || '#';
       link.hidden = !url;
-      // Too many pairs for one transaction: the rest needs a second one.
-      if (res.more) showClaimNotice('PART OF YOUR SHARE IS PAID. PRESS CLAIM AGAIN FOR THE REST.');
+      // Too many pairs for one transaction: the rest needs a second one. The
+      // popup would sit on top of that, so it waits for the last one.
+      if (res.more) {
+        showClaimNotice('PART OF YOUR SHARE IS PAID. PRESS CLAIM AGAIN FOR THE REST.');
+      } else {
+        openShare(asset, url);
+      }
     }).catch(function (err) {
       showClaimNotice(err && err.message ? err.message : 'THE CLAIM FAILED.');
     }).then(function () {
@@ -1197,6 +1319,7 @@
 
   connectionBridge();
   burnBridge();
+  shareBridge();
   galleryBridge();
 })();
 </script>
