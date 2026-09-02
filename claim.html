@@ -650,25 +650,29 @@
     return node;
   }
 
+  // The collection art every token shares until per-token metadata is live.
+  var COLLECTION_IMAGE = 'bapp-nft.jpg';
+
   /**
-   * Builds an NFT thumbnail. Without an image a numbered box remains.
-   * Before the collection art goes online this state is normal.
+   * Builds an NFT thumbnail. Per-token art wins, the collection art fills in,
+   * and a numbered box remains if neither image loads.
    */
   function thumb(item, cls) {
     var box = el('div', cls || 'thumb');
     var mark = el('b', null, '#' + item.id);
     box.appendChild(mark);
 
-    if (!item.image) return box;
+    var src = item.image || COLLECTION_IMAGE;
+    if (!src) return box;
 
     var img = document.createElement('img');
     img.loading = 'lazy';
     img.decoding = 'async';
     img.alt = 'bapp #' + item.id;
     img.addEventListener('load', function () { mark.remove(); });
-    // Before the art is uploaded the URL returns 404. The numbered box stays.
+    // If the art fails to load the numbered box stays.
     img.addEventListener('error', function () { img.remove(); });
-    img.src = item.image;
+    img.src = src;
     box.appendChild(img);
     return box;
   }
