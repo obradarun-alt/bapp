@@ -235,6 +235,41 @@
   }
   .info-value.link{color:var(--green);}
 
+  /* token contract address */
+  .ca-block{
+    display:flex; flex-direction:column; gap:9px;
+    padding-top:16px;
+  }
+  .ca-copy{
+    display:flex; align-items:center; gap:12px;
+    width:100%;
+    padding:12px 13px;
+    border:1px solid var(--panel-line);
+    border-radius:10px;
+    background:var(--bg2);
+    color:var(--ink);
+    text-align:left;
+    cursor:pointer;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .ca-copy:hover{border-color:var(--green); box-shadow:0 0 14px rgba(186,255,57,0.18);}
+  .ca-copy code{
+    flex:1;
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    line-height:1.5;
+    color:var(--green);
+    word-break:break-all;
+  }
+  .ca-copy .tag{
+    font-size:10px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+    white-space:nowrap;
+  }
+  .ca-copy.done .tag{color:var(--green);}
+
   .btn{
     border-radius:999px;
     border:1px solid var(--panel-line);
@@ -324,6 +359,13 @@
         <span class="info-label">Collection</span>
         <span class="info-value link">brokerapp</span>
       </div>
+      <div class="ca-block">
+        <span class="info-label">Token CA</span>
+        <button class="ca-copy" type="button" data-copy="0x49b77f255Ef2e53338c6b4E9C638fb169529C4a6" title="Copy the BAPP token address">
+          <code>0x49b77f255Ef2e53338c6b4E9C638fb169529C4a6</code>
+          <span class="tag">Copy</span>
+        </button>
+      </div>
       <a class="btn btn-primary" href="https://opensea.io/collection/brokerapp/" target="_blank" rel="noopener">View on OpenSea &#8599;</a>
       <a class="btn btn-secondary" href="https://x.com/Bappfun" target="_blank" rel="noopener">Follow @Bappfun &#8599;</a>
       <div class="footnote">Watch @Bappfun for the exact mint time and any last-minute updates.</div>
@@ -331,6 +373,61 @@
 
   </div>
 </div>
+
+<script>
+(function () {
+  'use strict';
+
+  // The deprecated path, for the browsers that never expose the async
+  // clipboard and the in-app ones that expose it but deny the permission.
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '0';
+    field.style.opacity = '0';
+    document.body.appendChild(field);
+    field.select();
+    field.setSelectionRange(0, text.length);
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(field);
+    return ok;
+  }
+
+  function copy(text) {
+    var legacy = function () {
+      return legacyCopy(text) ? Promise.resolve() : Promise.reject();
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).catch(legacy);
+    }
+    return legacy();
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-copy]'), function (btn) {
+    var tag = btn.querySelector('.tag');
+    var idle = tag.textContent;
+    var timer = null;
+
+    btn.addEventListener('click', function () {
+      copy(btn.getAttribute('data-copy')).then(function () {
+        btn.classList.add('done');
+        tag.textContent = 'Copied';
+      }, function () {
+        tag.textContent = 'Copy failed';
+      }).then(function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+          btn.classList.remove('done');
+          tag.textContent = idle;
+        }, 1600);
+      });
+    });
+  });
+})();
+</script>
 
 </body>
 </html>
